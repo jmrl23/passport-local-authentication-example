@@ -10,14 +10,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { apiRequest, cn } from '@/lib/utils';
 
-export default function Login() {
-  const navigate = useNavigate();
+export default function Login(props: { refetch: () => void }) {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -28,7 +27,9 @@ export default function Login() {
   });
   const onSubmit: SubmitHandler<FormValues> = async (formData) => {
     if (isProcessing) {
-      return alert('Processing..');
+      alert('Processing..');
+
+      return;
     }
 
     setIsProcessing(true);
@@ -52,7 +53,7 @@ export default function Login() {
       return;
     }
 
-    navigate(0);
+    props.refetch();
   };
 
   return (
