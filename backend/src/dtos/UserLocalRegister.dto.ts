@@ -1,6 +1,6 @@
 import { vendors } from '@jmrl23/express-helper';
 
-export class UserRegisterLocalDto {
+export class UserLocalRegisterDto {
   @vendors.classValidator.IsString()
   @vendors.classValidator.Matches('^[a-zA-Z0-9_]{4,}[0-9]*$', void 0, {
     message: 'Invalid username',

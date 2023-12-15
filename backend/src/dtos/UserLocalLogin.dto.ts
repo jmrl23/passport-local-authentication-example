@@ -1,6 +1,6 @@
 import { vendors } from '@jmrl23/express-helper';
 
-export class UserLoginLocalDto {
+export class UserLocalLoginDto {
   @vendors.classValidator.IsString()
   @vendors.classValidator.IsNotEmpty()
   username: string;

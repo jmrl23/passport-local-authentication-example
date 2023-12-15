@@ -1,46 +1,65 @@
 import { validate, wrapper } from '@jmrl23/express-helper';
 import { Router } from 'express';
-import { UserService } from '../../services/user.service';
-import { UserRegisterLocalDto } from '../../dtos/UserRegisterLocal.dto';
+import { UserLocalService } from '../../services/user-local.service';
+import { UserLocalRegisterDto } from '../../dtos/UserLocalRegister.dto';
+import { PrismaService } from '../../services/prisma.service';
 
 export const controller = Router();
 
-controller
+(async function () {
+  const userLocalService = await UserLocalService.getInstance();
+  const prismaService = PrismaService.getInstance();
+  const prismaClient = prismaService.getClient();
 
-  .get(
-    '/session',
-    wrapper(function (request) {
-      const user = request.user ?? null;
+  controller
 
-      return {
-        user,
-      };
-    }),
-  )
+    .get(
+      '/session',
+      wrapper(function (request) {
+        const user = request.user ?? null;
 
-  .post(
-    '/register',
-    validate('BODY', UserRegisterLocalDto),
-    wrapper(async function (request) {
-      const userService = await UserService.getInstance();
-      const user = await userService.registerUserLocal(
-        request.body.username,
-        request.body.password,
-      );
+        return {
+          user,
+        };
+      }),
+    )
 
-      return {
-        user,
-      };
-    }),
-  )
+    .post(
+      '/register',
+      validate('BODY', UserLocalRegisterDto),
+      wrapper(async function (request) {
+        const userAuthLocal = await userLocalService.register(
+          request.body.username,
+          request.body.password,
+        );
+        const user = await prismaClient.user.create({
+          data: {
+            userAuthLocalId: userAuthLocal.id,
+          },
+          include: {
+            UserInformation: true,
+            UserAuthLocal: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        });
 
-  .get(
-    '/logout',
-    wrapper(function (request, response) {
-      request.logOut((error) => {
-        if (error) throw error;
+        return {
+          user,
+        };
+      }),
+    )
 
-        response.json({ success: true });
-      });
-    }),
-  );
+    .get(
+      '/logout',
+      wrapper(function (request, response) {
+        request.logOut((error) => {
+          if (error) throw error;
+
+          response.json({ success: true });
+        });
+      }),
+    );
+})();

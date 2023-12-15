@@ -6,7 +6,8 @@ export default function Content(props: Props) {
   return (
     <div className='p-4'>
       <h1 className='font-extrabold'>
-        Hi there, <span className='underline'>{props.user.username}</span>!
+        Hi there,{' '}
+        <span className='underline'>{props.user.UserAuthLocal?.username}</span>!
       </h1>
       <LogoutButton refetch={props.refetch} />
     </div>

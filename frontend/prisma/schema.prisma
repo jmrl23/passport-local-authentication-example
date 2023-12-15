@@ -15,6 +15,31 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  UserInformation   UserInformation? @relation(fields: [userInformationId], references: [id])
+  userInformationId String?
+
+  UserAuthLocal   UserAuthLocal? @relation(fields: [userAuthLocalId], references: [id])
+  userAuthLocalId String?
+}
+
+model UserInformation {
+  id        String   @id @default(uuid()) @map("_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  displayName String?
+  email       String? @unique
+
+  User User[]
+}
+
+model UserAuthLocal {
+  id        String   @id @default(uuid()) @map("_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   username String @unique
   password String
+
+  User User[]
 }

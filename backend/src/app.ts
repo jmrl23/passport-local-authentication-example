@@ -23,7 +23,6 @@ app.disable('x-powered-by');
 app.use(
   morganMiddleware(),
   corsMiddleware({
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     origin: env.get('CORS_ORIGIN').default('*').asString(),
     credentials: true,
   }),
@@ -36,9 +35,6 @@ app.use(
   sessionMiddleware,
   passport.session(),
 );
-
-// public directory
-app.use(express.static(join(__dirname, '../public')));
 
 // controllers/ routes
 const controllers = registerControllers(

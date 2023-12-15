@@ -1,9 +1,9 @@
-import { validate, vendors, wrapper } from '@jmrl23/express-helper';
 import { Router } from 'express';
+import { validate, vendors, wrapper } from '@jmrl23/express-helper';
 import { Strategy as LocalStrategy } from 'passport-local';
-import { PrismaService } from '../../../services/prisma.service';
 import { UserService } from '../../../services/user.service';
-import { UserLoginLocalDto } from '../../../dtos/UserLoginLocal.dto';
+import { UserLocalLoginDto } from '../../../dtos/UserLocalLogin.dto';
+import { UserLocalService } from '../../../services/user-local.service';
 import passport from 'passport';
 
 export const controller = Router();
@@ -17,45 +17,25 @@ passport.use(
       passReqToCallback: true,
     },
     async function (_request, username, password, done) {
-      const prismaService = PrismaService.getInstance();
-      const prismaClient = prismaService.getClient();
-      const user = await prismaClient.user.findFirst({
-        where: {
-          username,
-        },
-        select: {
-          id: true,
-          username: true,
-          password: true,
-        },
-      });
+      try {
+        const userLocalService = await UserLocalService.getInstance();
+        const userAuthLocal = await userLocalService.login(username, password);
+        const userService = await UserService.getInstance();
+        const user = await userService.getUserById(userAuthLocal.User[0].id);
 
-      if (!user) {
-        return done(
-          new vendors.httpErrors.Unauthorized('User not exist'),
-          false,
-        );
+        if (!user) throw vendors.httpErrors.Unauthorized('User not found');
+
+        done(null, user);
+      } catch (error: unknown) {
+        done(error);
       }
-
-      if (!(await UserService.comparePassword(password, user.password))) {
-        return done(
-          new vendors.httpErrors.Unauthorized('Password is incorrect'),
-          false,
-        );
-      }
-
-      const _user = { ...user } as Express.User as Record<string, unknown>;
-
-      delete _user.password;
-
-      done(null, user);
     },
   ),
 );
 
 controller.post(
   '/',
-  validate('BODY', UserLoginLocalDto),
+  validate('BODY', UserLocalLoginDto),
   wrapper(function (request, response, next) {
     const successRedirect = `${request.protocol}://${request.get(
       'host',
